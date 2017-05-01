@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.R.attr.resource;
@@ -23,58 +24,69 @@ import static android.R.attr.resource;
 * based on a data source, which is a list of {@link AndroidFlavor} objects.
 * */
 
-public class WordAdapter extends ArrayAdapter<Word> {
+public class WordAdapter extends ArrayAdapter<Word>  {
 
-    private static final String LOG_TAG = WordAdapter.class.getSimpleName();
-    private int mcolorId;
+    /** Resource ID for the background color for this list of words */
+    private int mColorResourceId;
 
     /**
-     * This is our own custom constructor (it doesn't mirror a superclass constructor).
-     * The context is used to inflate the layout file, and the list is the data we want
-     * to populate into the lists.
-     *  @param context        The current context. Used to inflate the layout file.
-     * @param wordList A List of word objects to display in a list
-     * @param colorId
+     * Create a new {@link WordAdapter} object.
+     *
+     * @param context is the current context (i.e. Activity) that the adapter is being created in.
+     * @param words is the list of {@link Word}s to be displayed.
+     * @param colorResourceId is the resource ID for the background color for this list of words
      */
-
-    public WordAdapter(@NonNull Context context, @NonNull List<Word> wordList, int colorId) {
-        super(context, 0, wordList);
-        mcolorId = colorId;
+    public WordAdapter(Context context, ArrayList<Word> words, int colorResourceId) {
+        super(context, 0, words);
+        mColorResourceId = colorResourceId;
     }
 
-
-
-    @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+    public View getView(int position, View convertView, ViewGroup parent) {
+        // Check if an existing view is being reused, otherwise inflate the view
         View listItemView = convertView;
         if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(
                     R.layout.list_item, parent, false);
-            listItemView.findViewById(R.id.layout_text).setBackgroundColor(ContextCompat.getColor(getContext(), mcolorId));
         }
 
-        Word currentword = getItem(position);
+        // Get the {@link Word} object located at this position in the list
+        Word currentWord = getItem(position);
 
-        TextView miworkText = (TextView) listItemView.findViewById(R.id.miwokText);
-        miworkText.setText(currentword.getMiwokTranslation());
+        // Find the TextView in the list_item.xml layout with the ID miwok_text_view.
+        TextView miwokTextView = (TextView) listItemView.findViewById(R.id.miwok_text_view);
+        // Get the Miwok translation from the currentWord object and set this text on
+        // the Miwok TextView.
+        miwokTextView.setText(currentWord.getMiwokTranslationId());
 
-        TextView englishText = (TextView) listItemView.findViewById(R.id.englishText);
-        englishText.setText(currentword.getDefaultTranslation());
+        // Find the TextView in the list_item.xml layout with the ID default_text_view.
+        TextView defaultTextView = (TextView) listItemView.findViewById(R.id.default_text_view);
+        // Get the default translation from the currentWord object and set this text on
+        // the default TextView.
+        defaultTextView.setText(currentWord.getDefaultTranslationId());
 
-        ImageView image = (ImageView) listItemView.findViewById(R.id.image);
-        if (currentword.hasImage()){
-            image.setImageResource(currentword.getImageResourceId());
-            image.setVisibility(View.VISIBLE);
-
-        }else {
-            image.setVisibility(View.GONE);
+        // Find the ImageView in the list_item.xml layout with the ID image.
+        ImageView imageView = (ImageView) listItemView.findViewById(R.id.image);
+        // Check if an image is provided for this word or not
+        if (currentWord.hasImage()) {
+            // If an image is available, display the provided image based on the resource ID
+            imageView.setImageResource(currentWord.getImageResourceId());
+            // Make sure the view is visible
+            imageView.setVisibility(View.VISIBLE);
+        } else {
+            // Otherwise hide the ImageView (set visibility to GONE)
+            imageView.setVisibility(View.GONE);
         }
 
+        // Set the theme color for the list item
+        View textContainer = listItemView.findViewById(R.id.text_container);
+        // Find the color that the resource ID maps to
+        int color = ContextCompat.getColor(getContext(), mColorResourceId);
+        // Set the background color of the text container View
+        textContainer.setBackgroundColor(color);
 
-
+        // Return the whole list item layout (containing 2 TextViews) so that it can be shown in
+        // the ListView.
         return listItemView;
     }
-
-
 }
